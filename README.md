@@ -1,18 +1,17 @@
 # nodejs-express-下载 Excel 表格
 
-## 引入模块
+## 下载模块
 
-```javascript
-const XLSX = require('xlsx')
-const stream = require('stream')
-const urlencode = require('urlencode')
+```
+npm install xlsx
+npm install stream
 ```
 
 ## 数据格式
 
 数据格式:`[[表头],[数据1],[数据2]...]`
 
-**_eg:_**
+**_数据顺序与表头顺序一致,eg:_**
 
 ```javascript
 const resData = [
@@ -25,23 +24,33 @@ const resData = [
 ## 核心代码
 
 ```javascript
-const book = XLSX.utils.book_new()
-const sheet = XLSX.utils.aoa_to_sheet(resArray)
-XLSX.utils.book_append_sheet(book, sheet, '表格名称')
+const XLSX = require('xlsx')
+const stream = require('stream')
+const urlencode = require('urlencode')
 
-const fileContents = XLSX.write(book, { type: 'buffer', bookType: 'xlsx', bookSST: false })
+router.get('/ex', async function(req, res, next) {
+  // 请求接口 处理数据
+  // ...
 
-var readStream = new stream.PassThrough()
-readStream.end(fileContents)
+  // 下载导出Excel
+  const book = XLSX.utils.book_new()
+  const sheet = XLSX.utils.aoa_to_sheet(resData)
+  XLSX.utils.book_append_sheet(book, sheet, '表格名称')
 
-let fileName = '表格名称.xlsx'
-res.set('Content-disposition', 'attachment; filename=' + urlencode(fileName))
-res.set('Content-Type', 'text/plain')
+  const fileContents = XLSX.write(book, { type: 'buffer', bookType: 'xlsx', bookSST: false })
 
-readStream.pipe(res)
+  var readStream = new stream.PassThrough()
+  readStream.end(fileContents)
+
+  let fileName = '表格名称.xlsx'
+  res.set('Content-disposition', 'attachment; filename=' + urlencode(fileName))
+  res.set('Content-Type', 'text/plain')
+
+  readStream.pipe(res)
+})
 ```
 
-> **urlencode**模块,可以将下载的Excel文件名设为中文。
+> **urlencode**模块,可以将下载的 Excel 文件名设为中文。
 
 ## 参考
 
